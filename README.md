@@ -74,15 +74,3 @@ student-skill-exchange12/
 🤝 Contributing
 Contributions are welcome! If you'd like to improve the platform, please fork the repository and create a pull request, or open an issue with your suggestions.
 
-📄 License
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-
-***
-
-### How to add this to your repository:
-1. On your GitHub repository page (shown in `17809862034621158483002912560142_5de564.jpg`), click the big **Add a README** button.
-2. Clear any default text and paste the markdown block above into the editor.
-3. Scroll down and click **Commit changes...** to save it directly to your main branch.
-
-http://googleusercontent.com/interactive_content_block/0
