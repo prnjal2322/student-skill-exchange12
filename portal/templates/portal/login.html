@@ -1,0 +1,48 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Sign In | Student Skill Exchange Portal{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="card">
+        <div class="auth-header">
+            <h2>Welcome Back</h2>
+            <p style="color: var(--text-secondary); margin-top: 0.5rem;">Sign in to your SkillExchange account</p>
+        </div>
+        
+        <form method="post" class="django-form">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div style="background: rgba(239, 68, 68, 0.15); color: #ff8a8a; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: var(--border-radius-md); padding: 0.75rem 1rem; margin-bottom: 1.5rem; font-size: 0.85rem;">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            {% for field in form %}
+                <div class="auth-form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div style="color: #ff8a8a; font-size: 0.8rem; margin-top: 0.25rem;">
+                            {% for error in field.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;">
+                <i class="bx bx-log-in"></i> Sign In
+            </button>
+        </form>
+        
+        <div class="form-footer">
+            Don't have an account? <a href="{% url 'register' %}">Register here</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

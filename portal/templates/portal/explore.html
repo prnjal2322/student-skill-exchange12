@@ -1,0 +1,124 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Explore Skills | Student Skill Exchange Portal{% endblock %}
+
+{% block content %}
+<div style="margin-top: 1rem;">
+    <h2>Explore Student Skills</h2>
+    <p style="color: var(--text-secondary);">Find classmates who want to teach what you want to learn, or learn what you want to teach.</p>
+</div>
+
+<div class="explore-container">
+    
+    <!-- Sidebar Filters -->
+    <aside class="card sidebar-filter">
+        <form method="get" action="{% url 'explore' %}">
+            
+            <div class="filter-group">
+                <label class="filter-label" for="search-input">Search Keywords</label>
+                <input type="text" name="q" id="search-input" class="search-input" placeholder="e.g. Python, design..." value="{{ query }}">
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label" for="category-filter">Category</label>
+                <select name="category" id="category-filter" class="select-filter">
+                    <option value="">All Categories</option>
+                    {% for cat_val, cat_lbl in categories %}
+                        <option value="{{ cat_val }}" {% if selected_category == cat_val %}selected{% endif %}>
+                            {{ cat_lbl }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label" for="type-filter">Exchange Type</label>
+                <select name="type" id="type-filter" class="select-filter">
+                    <option value="">All Types</option>
+                    <option value="TEACH" {% if selected_type == 'TEACH' %}selected{% endif %}>Offered to Teach</option>
+                    <option value="LEARN" {% if selected_type == 'LEARN' %}selected{% endif %}>Wanted to Learn</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                <i class="bx bx-filter-alt"></i> Apply Filters
+            </button>
+            
+            {% if query or selected_category or selected_type %}
+                <a href="{% url 'explore' %}" class="btn btn-secondary" style="width: 100%; margin-top: 0.5rem; display: block; text-align: center;">
+                    Clear Filters
+                </a>
+            {% endif %}
+            
+        </form>
+    </aside>
+
+    <!-- Main Results Grid -->
+    <section>
+        {% if skills %}
+            <div class="skills-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+                {% for skill in skills %}
+                    <div class="card skill-card">
+                        <div>
+                            <div class="skill-header">
+                                <span class="skill-category">{{ skill.get_category_display }}</span>
+                                <span class="skill-badge {% if skill.skill_type == 'TEACH' %}badge-teach{% else %}badge-learn{% endif %}">
+                                    {% if skill.skill_type == 'TEACH' %}Teach{% else %}Learn{% endif %}
+                                </span>
+                            </div>
+                            <h3 class="skill-title">{{ skill.title }}</h3>
+                            <p class="skill-desc">{{ skill.description }}</p>
+                        </div>
+                        
+                        <div>
+                            <div class="skill-owner">
+                                <div class="avatar-circle">
+                                    {{ skill.user.first_name|default:skill.user.username|slice:":1"|upper }}
+                                </div>
+                                <div class="owner-info">
+                                    <div class="owner-name">
+                                        <a href="{% url 'profile_detail' skill.user.username %}">
+                                            {{ skill.user.first_name }} {{ skill.user.last_name }}
+                                        </a>
+                                    </div>
+                                    <div class="owner-dept">{{ skill.user.profile.department|default:"Student" }}</div>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.8rem; color: var(--text-secondary);">
+                                    Level: <strong>{{ skill.proficiency }}</strong>
+                                </span>
+                                
+                                {% if user.is_authenticated %}
+                                    {% if skill.user != user %}
+                                        <a href="{% url 'request_session' skill.id %}" class="btn btn-primary btn-sm">Request Exchange</a>
+                                    {% else %}
+                                        <span style="font-size: 0.8rem; font-style: italic; color: var(--text-secondary);">Your Post</span>
+                                    {% endif %}
+                                {% else %}
+                                    <a href="{% url 'login' %}?next={% url 'request_session' skill.id %}" class="btn btn-primary btn-sm">Request Exchange</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state" style="padding: 5rem 2rem;">
+                <i class="bx bx-search-alt" style="font-size: 3rem; color: var(--text-secondary); display: block; margin-bottom: 1rem;"></i>
+                <h4>No Skills Found</h4>
+                <p style="margin-top: 0.5rem; max-width: 400px; margin-left: auto; margin-right: auto;">
+                    We couldn't find any skills matching your search criteria. Try adjusting your search queries or clearing the category filter.
+                </p>
+                {% if user.is_authenticated %}
+                    <div style="margin-top: 1.5rem;">
+                        <a href="{% url 'add_skill' %}" class="btn btn-primary btn-sm">Post a Skill Yourself</a>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </section>
+
+</div>
+{% endblock %}

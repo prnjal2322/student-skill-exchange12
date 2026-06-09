@@ -1,0 +1,31 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Delete Skill | Student Skill Exchange Portal{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="card" style="text-align: center; border-color: rgba(239, 68, 68, 0.3);">
+        <div style="font-size: 3.5rem; color: var(--danger); margin-bottom: 1rem;">
+            <i class="bx bx-trash"></i>
+        </div>
+        
+        <h2>Delete Skill Listing?</h2>
+        <p style="color: var(--text-secondary); margin: 1rem 0 2rem;">
+            Are you sure you want to delete your skill listing for <strong>"{{ skill.title }}"</strong>? This action cannot be undone and will remove all corresponding data.
+        </p>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div style="display: flex; gap: 1rem;">
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary" style="flex: 1;">
+                    Cancel
+                </a>
+                <button type="submit" class="btn btn-danger" style="flex: 1;">
+                    Confirm Delete
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

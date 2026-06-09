@@ -1,0 +1,95 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Student Skill Exchange Portal{% endblock %}</title>
+    
+    <!-- Link to global styling -->
+    <link rel="stylesheet" href="{% static 'portal/css/style.css' %}">
+    
+    <!-- Boxicons (for sleek modern icons) -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header>
+        <div class="container navbar">
+            <a href="{% url 'landing' %}" class="brand">
+                <i class="bx bxs-graduation"></i> SkillExchange
+            </a>
+            
+            <nav>
+                <ul class="nav-links">
+                    <li class="nav-item {% if request.resolver_match.url_name == 'landing' %}active{% endif %}">
+                        <a href="{% url 'landing' %}">Home</a>
+                    </li>
+                    <li class="nav-item {% if request.resolver_match.url_name == 'explore' %}active{% endif %}">
+                        <a href="{% url 'explore' %}">Explore Skills</a>
+                    </li>
+                    {% if user.is_authenticated %}
+                        <li class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                            <a href="{% url 'dashboard' %}">Dashboard</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            
+            <div class="nav-buttons">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'profile_detail' user.username %}" class="btn btn-secondary btn-sm">
+                        <i class="bx bx-user-circle"></i> {{ user.first_name|default:user.username }}
+                    </a>
+                    <a href="{% url 'logout' %}" class="btn btn-danger btn-sm">
+                        <i class="bx bx-log-out"></i> Logout
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-secondary btn-sm">Sign In</a>
+                    <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Get Started</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="container" style="padding-top: 1.5rem; padding-bottom: 3rem;">
+        
+        <!-- Alerts & Django Messages -->
+        {% if messages %}
+            <div class="alert-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags|default:'info' }}">
+                        <span>
+                            {% if message.tags == 'success' %}
+                                <i class="bx bx-check-circle"></i>
+                            {% elif message.tags == 'error' %}
+                                <i class="bx bx-error-circle"></i>
+                            {% else %}
+                                <i class="bx bx-info-circle"></i>
+                            {% endif %}
+                            {{ message }}
+                        </span>
+                        <i class="bx bx-x" style="cursor: pointer;" onclick="this.parentElement.remove();"></i>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 SkillExchange Portal. Connecting students to share skills, learn, and grow together.</p>
+            <p style="margin-top: 0.5rem; opacity: 0.6; font-size: 0.8rem;">Designed for campus skill sharing and college peer tutoring.</p>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

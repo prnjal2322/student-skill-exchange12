@@ -1,0 +1,216 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Dashboard | Student Skill Exchange Portal{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+    
+    <!-- Left Sidebar: Profile Details -->
+    <aside class="card profile-card">
+        <div class="profile-avatar-lg">
+            {{ user.first_name|default:user.username|slice:":1"|upper }}
+        </div>
+        <h2 class="profile-name">{{ user.first_name }} {{ user.last_name }}</h2>
+        <div class="profile-dept">
+            <i class="bx bxs-institution"></i> {{ profile.department|default:"Department not set" }}
+        </div>
+        
+        <p class="profile-bio">
+            {% if profile.bio %}
+                {{ profile.bio }}
+            {% else %}
+                <span style="font-style: italic; color: var(--text-secondary);">No bio added yet. Tell others what you are passionate about!</span>
+            {% endif %}
+        </p>
+        
+        <div class="profile-contact">
+            <strong>Contact Info:</strong><br>
+            {{ profile.contact_info|default:"No contact details listed" }}
+        </div>
+        
+        <a href="{% url 'edit_profile' %}" class="btn btn-secondary" style="width: 100%;">
+            <i class="bx bx-edit-alt"></i> Edit Profile
+        </a>
+    </aside>
+
+    <!-- Right Content: Dashboard Summary & Activity -->
+    <section class="dashboard-sections">
+        
+        <!-- Statistics Widgets -->
+        <div class="stats-grid">
+            <div class="card" style="text-align: center; padding: 1rem;">
+                <div class="stat-num" style="font-size: 1.8rem;">{{ teaching_count }}</div>
+                <div class="stat-label" style="font-size: 0.75rem;">Teaching</div>
+            </div>
+            <div class="card" style="text-align: center; padding: 1rem;">
+                <div class="stat-num" style="font-size: 1.8rem;" style="color: var(--accent);">{{ learning_count }}</div>
+                <div class="stat-label" style="font-size: 0.75rem;">Learning</div>
+            </div>
+            <div class="card" style="text-align: center; padding: 1rem;">
+                <div class="stat-num" style="font-size: 1.8rem;">{{ pending_incoming }}</div>
+                <div class="stat-label" style="font-size: 0.75rem;">New Requests</div>
+            </div>
+            <div class="card" style="text-align: center; padding: 1rem;">
+                <div class="stat-num" style="font-size: 1.8rem;">{{ completed_sessions }}</div>
+                <div class="stat-label" style="font-size: 0.75rem;">Exchanges</div>
+            </div>
+        </div>
+
+        <!-- My Skills List -->
+        <div class="card">
+            <div class="section-header-flex">
+                <h3>My Skills</h3>
+                <a href="{% url 'add_skill' %}" class="btn btn-primary btn-sm">
+                    <i class="bx bx-plus"></i> Add Skill
+                </a>
+            </div>
+            
+            {% if my_skills %}
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    {% for skill in my_skills %}
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: var(--border-radius-md);">
+                            <div>
+                                <span class="skill-badge {% if skill.skill_type == 'TEACH' %}badge-teach{% else %}badge-learn{% endif %}" style="font-size: 0.7rem;">
+                                    {% if skill.skill_type == 'TEACH' %}Teaching{% else %}Learning{% endif %}
+                                </span>
+                                <strong style="font-size: 1.05rem; margin-left: 0.5rem; vertical-align: middle;">{{ skill.title }}</strong>
+                                <span style="font-size: 0.8rem; color: var(--text-secondary); margin-left: 0.5rem;">({{ skill.proficiency }})</span>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <a href="{% url 'edit_skill' skill.id %}" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.6rem;">
+                                    <i class="bx bx-edit"></i>
+                                </a>
+                                <a href="{% url 'delete_skill' skill.id %}" class="btn btn-danger btn-sm" style="padding: 0.35rem 0.6rem;">
+                                    <i class="bx bx-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>You haven't listed any skills yet. Share what you can teach or what you want to learn!</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Incoming Session Requests -->
+        <div class="card">
+            <div class="section-header-flex">
+                <h3>Received Session Requests</h3>
+            </div>
+            
+            {% if received_requests %}
+                <div class="request-list">
+                    {% for req in received_requests %}
+                        <div class="request-card">
+                            <div class="request-meta">
+                                <div class="request-skill-info">
+                                    {{ req.skill.title }} 
+                                    <span class="skill-badge {% if req.skill.skill_type == 'TEACH' %}badge-learn{% else %}badge-teach{% endif %}" style="font-size: 0.7rem; vertical-align: middle;">
+                                        {% if req.skill.skill_type == 'TEACH' %}wants to learn{% else %}offers to teach{% endif %}
+                                    </span>
+                                </div>
+                                <div class="request-user-info">
+                                    From: <strong><a href="{% url 'profile_detail' req.sender.username %}">{{ req.sender.first_name }} {{ req.sender.last_name }}</a></strong> ({{ req.sender.profile.department|default:"Student" }})
+                                </div>
+                                {% if req.message %}
+                                    <div class="request-msg">
+                                        "{{ req.message }}"
+                                    </div>
+                                {% endif %}
+                                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                                    Requested on: {{ req.created_at|date:"M d, Y" }}
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div style="text-align: right; margin-bottom: 0.5rem;">
+                                    <span class="status-badge {% if req.status == 'PENDING' %}status-pending{% elif req.status == 'ACCEPTED' %}status-accepted{% elif req.status == 'DECLINED' %}status-declined{% else %}status-completed{% endif %}">
+                                        {{ req.status }}
+                                    </span>
+                                </div>
+                                
+                                <div class="request-actions">
+                                    {% if req.status == 'PENDING' %}
+                                        <a href="{% url 'respond_request' req.id 'accept' %}" class="btn btn-success btn-sm">Accept</a>
+                                        <a href="{% url 'respond_request' req.id 'decline' %}" class="btn btn-danger btn-sm">Decline</a>
+                                    {% elif req.status == 'ACCEPTED' %}
+                                        <a href="{% url 'complete_request' req.id %}" class="btn btn-success btn-sm">
+                                            <i class="bx bx-check-double"></i> Mark Completed
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>No incoming session requests yet.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Outgoing Session Requests -->
+        <div class="card">
+            <div class="section-header-flex">
+                <h3>Sent Session Requests</h3>
+            </div>
+            
+            {% if sent_requests %}
+                <div class="request-list">
+                    {% for req in sent_requests %}
+                        <div class="request-card">
+                            <div class="request-meta">
+                                <div class="request-skill-info">
+                                    {{ req.skill.title }}
+                                    <span class="skill-badge {% if req.skill.skill_type == 'TEACH' %}badge-teach{% else %}badge-learn{% endif %}" style="font-size: 0.7rem; vertical-align: middle;">
+                                        {% if req.skill.skill_type == 'TEACH' %}Teach{% else %}Learn{% endif %}
+                                    </span>
+                                </div>
+                                <div class="request-user-info">
+                                    To: <strong><a href="{% url 'profile_detail' req.receiver.username %}">{{ req.receiver.first_name }} {{ req.receiver.last_name }}</a></strong> ({{ req.receiver.profile.department|default:"Student" }})
+                                </div>
+                                {% if req.message %}
+                                    <div class="request-msg">
+                                        "{{ req.message }}"
+                                    </div>
+                                {% endif %}
+                                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                                    Sent on: {{ req.created_at|date:"M d, Y" }}
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div style="text-align: right; margin-bottom: 0.5rem;">
+                                    <span class="status-badge {% if req.status == 'PENDING' %}status-pending{% elif req.status == 'ACCEPTED' %}status-accepted{% elif req.status == 'DECLINED' %}status-declined{% else %}status-completed{% endif %}">
+                                        {{ req.status }}
+                                    </span>
+                                </div>
+                                
+                                {% if req.status == 'ACCEPTED' %}
+                                    <div class="request-actions">
+                                        <a href="{% url 'complete_request' req.id %}" class="btn btn-success btn-sm">
+                                            <i class="bx bx-check-double"></i> Mark Completed
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>You haven't sent any session requests yet.</p>
+                    <div style="margin-top: 1rem;">
+                        <a href="{% url 'explore' %}" class="btn btn-secondary btn-sm">Search for Skills</a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+    </section>
+
+</div>
+{% endblock %}

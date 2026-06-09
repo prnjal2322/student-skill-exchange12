@@ -1,0 +1,76 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Request Session | Student Skill Exchange Portal{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper" style="max-width: 600px;">
+    <div class="card">
+        
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div style="font-size: 2.5rem; color: var(--accent); margin-bottom: 0.5rem;">
+                <i class="bx bx-paper-plane"></i>
+            </div>
+            <h2>Request a Session</h2>
+            <p style="color: var(--text-secondary); margin-top: 0.5rem;">
+                Send a request to connect with <strong>{{ skill.user.first_name }} {{ skill.user.last_name }}</strong>
+            </p>
+        </div>
+
+        <!-- Target Skill Info Panel -->
+        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 1.25rem; margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                <span style="font-size: 0.8rem; color: var(--accent); font-weight: 500;">{{ skill.get_category_display }}</span>
+                <span class="skill-badge {% if skill.skill_type == 'TEACH' %}badge-teach{% else %}badge-learn{% endif %}" style="font-size: 0.75rem;">
+                    {% if skill.skill_type == 'TEACH' %}Offers to Teach{% else %}Wants to Learn{% endif %}
+                </span>
+            </div>
+            <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">{{ skill.title }}</h3>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.75rem;">
+                {{ skill.description }}
+            </p>
+            <div style="font-size: 0.85rem; color: var(--text-primary);">
+                Student Proficiency Level: <strong>{{ skill.proficiency }}</strong>
+            </div>
+        </div>
+        
+        <form method="post" class="django-form">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div style="background: rgba(239, 68, 68, 0.15); color: #ff8a8a; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: var(--border-radius-md); padding: 0.75rem 1rem; margin-bottom: 1.5rem; font-size: 0.85rem;">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            {% for field in form %}
+                <div class="auth-form-group">
+                    <label for="{{ field.id_for_label }}">Introduction Message (Optional)</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <div class="helptext">{{ field.help_text }}</div>
+                    {% endif %}
+                    {% if field.errors %}
+                        <div style="color: #ff8a8a; font-size: 0.8rem; margin-top: 0.25rem;">
+                            {% for error in field.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <a href="{% url 'explore' %}" class="btn btn-secondary" style="flex: 1;">
+                    Cancel
+                </a>
+                <button type="submit" class="btn btn-primary" style="flex: 2;">
+                    Send Exchange Request
+                </button>
+            </div>
+        </form>
+        
+    </div>
+</div>
+{% endblock %}

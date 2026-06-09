@@ -1,0 +1,111 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Welcome | Student Skill Exchange Portal{% endblock %}
+
+{% block content %}
+<!-- Hero Area -->
+<section class="hero-section">
+    <h1 class="hero-title">Learn from peers.<br>Teach what you love.</h1>
+    <p class="hero-subtitle">
+        SkillExchange is a student-to-student platform built for college campuses. Connect with classmates, trade skills, and learn everything from coding to guitar without spending a dime.
+    </p>
+    <div>
+        {% if user.is_authenticated %}
+            <a href="{% url 'dashboard' %}" class="btn btn-primary">
+                <i class="bx bxs-dashboard"></i> Go to Dashboard
+            </a>
+            <a href="{% url 'explore' %}" class="btn btn-secondary">
+                <i class="bx bx-search"></i> Explore Skills
+            </a>
+        {% else %}
+            <a href="{% url 'register' %}" class="btn btn-primary">
+                <i class="bx bx-user-plus"></i> Join the Community
+            </a>
+            <a href="{% url 'explore' %}" class="btn btn-secondary">
+                <i class="bx bx-search"></i> See What's Posted
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Platform Stats -->
+    <div class="hero-stats">
+        <div class="stat-item">
+            <div class="stat-num">{{ total_users }}</div>
+            <div class="stat-label">Students</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num">{{ total_skills }}</div>
+            <div class="stat-label">Skills Offered</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num">{{ total_requests }}</div>
+            <div class="stat-label">Connections</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num">{{ completed_exchanges }}</div>
+            <div class="stat-label">Completed Sessions</div>
+        </div>
+    </div>
+</section>
+
+<!-- Recent Skills section -->
+<section style="margin-top: 2rem;">
+    <h2 class="section-title">Recently Added Skills</h2>
+    {% if recent_skills %}
+        <div class="skills-grid" style="margin-top: 2rem;">
+            {% for skill in recent_skills %}
+                <div class="card skill-card">
+                    <div>
+                        <div class="skill-header">
+                            <span class="skill-category">{{ skill.get_category_display }}</span>
+                            <span class="skill-badge {% if skill.skill_type == 'TEACH' %}badge-teach{% else %}badge-learn{% endif %}">
+                                {% if skill.skill_type == 'TEACH' %}Teach{% else %}Learn{% endif %}
+                            </span>
+                        </div>
+                        <h3 class="skill-title">{{ skill.title }}</h3>
+                        <p class="skill-desc">{{ skill.description }}</p>
+                    </div>
+                    <div>
+                        <div class="skill-owner">
+                            <div class="avatar-circle">
+                                {{ skill.user.first_name|default:skill.user.username|slice:":1"|upper }}
+                            </div>
+                            <div class="owner-info">
+                                <div class="owner-name">{{ skill.user.first_name }} {{ skill.user.last_name|slice:":1" }}.</div>
+                                <div class="owner-dept">{{ skill.user.profile.department|default:"Student" }}</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.8rem; color: var(--text-secondary);">
+                                Level: <strong>{{ skill.proficiency }}</strong>
+                            </span>
+                            {% if user.is_authenticated %}
+                                {% if skill.user != user %}
+                                    <a href="{% url 'request_session' skill.id %}" class="btn btn-primary btn-sm">Request</a>
+                                {% else %}
+                                    <span style="font-size: 0.8rem; font-style: italic; color: var(--text-secondary)">Your Post</span>
+                                {% endif %}
+                            {% else %}
+                                <a href="{% url 'login' %}?next={% url 'request_session' skill.id %}" class="btn btn-primary btn-sm">Request</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div style="text-align: center; margin-bottom: 4rem;">
+            <a href="{% url 'explore' %}" class="btn btn-secondary">
+                View All Skills <i class="bx bx-right-arrow-alt"></i>
+            </a>
+        </div>
+    {% else %}
+        <div class="empty-state" style="margin-bottom: 4rem;">
+            <i class="bx bx-info-circle" style="font-size: 2.5rem; display: block; margin-bottom: 1rem;"></i>
+            <p>No skills have been posted yet. Be the first to post a skill!</p>
+            <div style="margin-top: 1.5rem;">
+                <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Get Started Now</a>
+            </div>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

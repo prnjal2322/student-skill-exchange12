@@ -1,0 +1,93 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}{{ profile_user.first_name }}'s Profile | Student Skill Exchange Portal{% endblock %}
+
+{% block content %}
+<div style="margin-top: 1.5rem; max-width: 900px; margin-left: auto; margin-right: auto;">
+    
+    <!-- Profile Card Summary -->
+    <div class="card" style="text-align: center; padding: 3rem 2rem; margin-bottom: 2.5rem; position: relative;">
+        <div class="profile-avatar-lg" style="width: 100px; height: 100px; font-size: 2.8rem; margin-bottom: 1rem;">
+            {{ profile_user.first_name|default:profile_user.username|slice:":1"|upper }}
+        </div>
+        
+        <h2>{{ profile_user.first_name }} {{ profile_user.last_name }}</h2>
+        
+        <div style="color: var(--accent); font-weight: 600; font-family: var(--font-heading); margin-bottom: 1rem;">
+            <i class="bx bxs-institution"></i> {{ profile.department|default:"Student" }}
+        </div>
+        
+        <div style="max-width: 600px; margin: 0 auto 2rem; color: var(--text-secondary); line-height: 1.6;">
+            {% if profile.bio %}
+                "{{ profile.bio }}"
+            {% else %}
+                <span style="font-style: italic; color: var(--text-secondary);">No bio listed for this user yet.</span>
+            {% endif %}
+        </div>
+        
+        <div style="display: inline-block; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1rem 2rem; border-radius: var(--border-radius-md);">
+            <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">
+                Contact Details
+            </div>
+            <div style="font-family: var(--font-heading); font-weight: 600;">
+                {% if user.is_authenticated %}
+                    {{ profile.contact_info|default:"No contact details listed" }}
+                {% else %}
+                    <a href="{% url 'login' %}?next={{ request.path }}" style="font-style: italic;">Log in to view contact details</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Skills Offered by this User -->
+    <div>
+        <h3 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">
+            Skills Posted by {{ profile_user.first_name }}
+        </h3>
+        
+        {% if skills %}
+            <div class="skills-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+                {% for skill in skills %}
+                    <div class="card skill-card" style="padding: 1.25rem;">
+                        <div>
+                            <div class="skill-header">
+                                <span class="skill-category">{{ skill.get_category_display }}</span>
+                                <span class="skill-badge {% if skill.skill_type == 'TEACH' %}badge-teach{% else %}badge-learn{% endif %}">
+                                    {% if skill.skill_type == 'TEACH' %}Teach{% else %}Learn{% endif %}
+                                </span>
+                            </div>
+                            <h4 style="font-size: 1.2rem; margin-bottom: 0.5rem;">{{ skill.title }}</h4>
+                            <p class="skill-desc" style="font-size: 0.85rem; margin-bottom: 1.25rem;">{{ skill.description }}</p>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 0.75rem;">
+                            <span style="font-size: 0.75rem; color: var(--text-secondary);">
+                                Level: <strong>{{ skill.proficiency }}</strong>
+                            </span>
+                            
+                            {% if user.is_authenticated %}
+                                {% if skill.user != user %}
+                                    <a href="{% url 'request_session' skill.id %}" class="btn btn-primary btn-sm" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">
+                                        Request
+                                    </a>
+                                {% else %}
+                                    <span style="font-size: 0.75rem; font-style: italic; color: var(--text-secondary);">Your Post</span>
+                                {% endif %}
+                            {% else %}
+                                <a href="{% url 'login' %}?next={% url 'request_session' skill.id %}" class="btn btn-primary btn-sm" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">
+                                    Request
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <p>This student hasn't posted any skills yet.</p>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
